@@ -38,7 +38,7 @@ def login_koyeb(email, password):
             error_message = page.wait_for_selector('.MuiAlert-message', timeout=5000)
             if error_message:
                 error_text = error_message.inner_text()
-                return f"账号 {email} 登录失败: {error_text}"
+                return f"🔴 账号 {email} 登录失败 ❌: {error_text}"
         except:
             # 如果没有找到错误消息,检查是否已经跳转到仪表板页面
             try:
@@ -48,14 +48,14 @@ def login_koyeb(email, password):
                 message = ''
                 try:
                     days = page.locator('#timer-days').inner_text()
-                    message = (f"\n⏳ 剩余时间：{days} 天")
+                    message = (f"\n⏱️ 剩余时间：{days} 天")
                 except Exception as e:
                     message = f"但无法解析剩余时间：{e}"
                 #aa###################################
 
                 return f"🟢 {email} 登录成功 ✅{message}"
             except:
-                return f"账号 {email} 登录失败: 未能跳转到仪表板页面"
+                return f"🔴 账号 {email} 登录失败 ❌: 未能跳转到仪表板页面"
                 
         finally:
             browser.close()
