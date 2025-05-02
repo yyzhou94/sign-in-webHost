@@ -59,9 +59,8 @@ for email, password in zip(emails, passwords):
 
 # 整合并推送 Telegram 消息
 def send_telegram_message(text):
-    url = f"https://api.telegram.org/bot{telegram_token}/sendMessage"
+    url = f"https://api.telegram.org/bot{telegram_token}/sendMessage?chat_id={telegram_chat_id}"
     payload = {
-        'chat_id': telegram_chat_id,
         'text': text,
         'parse_mode': 'HTML',
         'disable_web_page_preview': True
