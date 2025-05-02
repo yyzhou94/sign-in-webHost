@@ -1,4 +1,4 @@
-name: Run Login Script
+name: Run webhostmost keepalive Script
 
 on:
   workflow_dispatch:
