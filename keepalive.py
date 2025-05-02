@@ -1,76 +1,80 @@
+from playwright.sync_api import sync_playwright
 import os
 import requests
 from bs4 import BeautifulSoup
 
-emails = os.environ['WHM_EMAILS'].split(',')
-passwords = os.environ['WHM_PASSWORDS'].split(',')
-
-login_url = 'https://client.webhostmost.com/login'
-dashboard_url = 'https://client.webhostmost.com/clientarea.php'
-
-# Telegram 配置
-telegram_token = os.environ.get('TELEGRAM_BOT_TOKEN')
-telegram_chat_id = os.environ.get('TELEGRAM_CHAT_ID')
-
-headers = {
-    'User-Agent': 'Mozilla/5.0',
-    'Content-Type': 'application/x-www-form-urlencoded'
-}
-
-messages = []  # 最终要推送的消息内容
-
-for email, password in zip(emails, passwords):
-    with requests.Session() as session:
-        login_page = session.get(login_url)
-        soup = BeautifulSoup(login_page.text, 'html.parser')
-        token_input = soup.find('input', {'name': 'token'})
-        token = token_input['value'] if token_input else ''
-
-        payload = {
-            'username': email.strip(),
-            'password': password.strip(),
-            'token': token,
-        }
-
-        response = session.post(login_url, data=payload, headers=headers)
-
-        if 'Logout' in response.text or 'logout' in response.text:
-            dashboard_response = session.get(dashboard_url)
-            soup = BeautifulSoup(dashboard_response.text, 'html.parser')
-
-            try:
-                days = soup.find('span', id='timer-days').text.strip()
-                hours = soup.find('span', id='timer-hours').text.strip()
-                minutes = soup.find('span', id='timer-minutes').text.strip()
-                seconds = soup.find('span', id='timer-seconds').text.strip()
-
-                message = (
-                    f"🟢 <b>{email}</b> 登录成功 ✅\n"
-                    f"⏳ <b>剩余时间：</b>\n"
-                    f"🗓️ {days} 天\n"
-                    f"⏰ {hours} 小时 {minutes} 分钟 {seconds} 秒"
-                )
-            except Exception as e:
-                message = f"⚠️ <b>{email}</b> 登录成功，但无法解析剩余时间：{e}"
-        else:
-            message = f"🔴 <b>{email}</b> 登录失败 ❌，请检查邮箱或密码"
-
-        messages.append(message)
-
-# 整合并推送 Telegram 消息
-def send_telegram_message(text):
-    url = f"https://api.telegram.org/bot{telegram_token}/sendMessage?chat_id={telegram_chat_id}"
+def send_telegram_message(message):
+    bot_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+    chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
     payload = {
-        'text': text,
-        'parse_mode': 'HTML',
-        'disable_web_page_preview': True
+        "chat_id": chat_id,
+        "text": message,
+        "parse_mode": "Markdown"
     }
-    response = requests.post(url, data=payload)
-    if response.status_code != 200:
-        print("❗Telegram 消息发送失败")
-    else:
-        print("📬 Telegram 消息已发送")
+    response = requests.post(url, json=payload)
+    return response.json()
 
-# 构造消息
-full_message = "📡 <b>WebHostMost 保活报告</b>\n\n" + "\n\n".join(messages)
-send_telegram_message(full_message)
+def login_koyeb(email, password):
+    with sync_playwright() as p:
+        browser = p.firefox.launch(headless=True)
+        page = browser.new_page()
+
+        # 访问登录页面
+        page.goto("https://client.webhostmost.com/login")
+
+        # 输入邮箱和密码
+        page.get_by_placeholder("Enter email").click()
+        page.get_by_placeholder("Enter email").fill(email)
+        page.get_by_placeholder("Password").click()
+        page.get_by_placeholder("Password").fill(password)
+    
+        # 点击登录按钮
+        page.get_by_role("button", name="Login").click()
+
+        # 等待可能出现的错误消息或成功登录后的页面        
+        try:
+            # 等待可能的错误消息
+            error_message = page.wait_for_selector('.MuiAlert-message', timeout=5000)
+            if error_message:
+                error_text = error_message.inner_text()
+                return f"账号 {email} 登录失败: {error_text}"
+        except:
+            # 如果没有找到错误消息,检查是否已经跳转到仪表板页面
+            try:
+                page.wait_for_url("https://client.webhostmost.com/clientarea.php", timeout=5000)
+
+                #aa#############################
+                message = ''
+                try:
+                    days = page.locator('#timer-days').inner_text()
+                    message = (f"\n⏳ <b>剩余时间：</b>{days} 天")
+                except Exception as e:
+                    message = f"但无法解析剩余时间：{e}"
+                #aa###################################
+
+                return f"🟢 {email} 登录成功 ✅{message}\n"
+            except:
+                return f"账号 {email} 登录失败: 未能跳转到仪表板页面"
+                
+        finally:
+            browser.close()
+
+if __name__ == "__main__":
+    accounts = os.environ.get('WEBHOST', '').split()
+    login_statuses = []
+
+    for account in accounts:
+        email, password = account.split(':')
+        status = login_koyeb(email, password)
+        login_statuses.append(status)
+        print(status)
+
+    if login_statuses:
+        message = "WEBHOST登录状态:\n\n" + "\n".join(login_statuses)
+        result = send_telegram_message(message)
+        print("消息已发送到Telegram:", result)
+    else:
+        error_message = "没有配置任何账号"
+        send_telegram_message(error_message)
+        print(error_message)
