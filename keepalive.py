@@ -53,7 +53,7 @@ def login_koyeb(email, password):
                     message = f"但无法解析剩余时间：{e}"
                 #aa###################################
 
-                return f"🟢 {email} 登录成功 ✅{message}\n"
+                return f"🟢 {email} 登录成功 ✅{message}"
             except:
                 return f"账号 {email} 登录失败: 未能跳转到仪表板页面"
                 
