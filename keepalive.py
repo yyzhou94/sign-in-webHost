@@ -48,7 +48,7 @@ def login_koyeb(email, password):
                 message = ''
                 try:
                     days = page.locator('#timer-days').inner_text()
-                    message = (f"\n⏳ <b>剩余时间：</b>{days} 天")
+                    message = (f"\n⏳ 剩余时间：{days} 天")
                 except Exception as e:
                     message = f"但无法解析剩余时间：{e}"
                 #aa###################################
