@@ -1,4 +1,4 @@
-# WebHostMost 保活与通知脚本
+# WebHostMost 自动化批量保号，每月1号自动登录一次面板，并且发送消息到Telegram
 
 **WebHostMost 保活脚本**旨在自动登录 WebHostMost 客户区，定期检查账户的剩余时间，并通过 Telegram 机器人发送通知，提醒账户的保活状态和剩余时间。
 
@@ -23,7 +23,14 @@
 ## 🛠️ 安装与配置
 
 ### 1. 克隆项目
+#### 1.1 Fork 仓库
 
+1. **访问原始仓库页面**：
+    - 打开你想要 fork 的 GitHub 仓库页面。
+
+2. **Fork 仓库**：
+    - 点击页面右上角的 "Fork" 按钮，将仓库 fork 到你的 GitHub 账户下。
+#### 1.2 Git 仓库
 首先，将项目克隆到您的本地或服务器：
 
 ```bash
@@ -46,28 +53,37 @@ pip install -r requirements.txt
 
 ### 3. 配置 GitHub Secrets
 
-#### 3.1 设置 GitHub Secrets
-
 请在 GitHub 仓库的 **Settings > Secrets and variables > Actions** 中，添加以下 Secrets：
+  - 转到你 fork 的仓库页面。
+  - 点击 `Settings`，然后在左侧菜单中选择 `Secrets`。
+  - 添加以下 Secrets：
+  - `WEBHOST`: 账号信息,格式 账号1:密码 账号2:密码 账号3:密码
+  - `TELEGRAM_BOT_TOKEN`: 你的 Telegram Bot 的 API Token。
+  - `TELEGRAM_CHAT_ID`: 你的 Telegram Chat ID。
 
-* `WHM_EMAILS`：账户邮箱（多个账户请用逗号分隔）。
-* `WHM_PASSWORDS`：账户密码（与邮箱顺序一一对应，逗号分隔）。
-* `TELEGRAM_BOT_TOKEN`：您的 Telegram Bot API Token，详见 [BotFather](https://core.telegram.org/bots#botfather)。
-* `TELEGRAM_CHAT_ID`：您的 Telegram 个人或群组 Chat ID。可以通过 [Telegram API](https://api.telegram.org/bot<YourBotToken>/getUpdates) 获取。
+  - **获取方法**：
+    - 在 Telegram 中创建 Bot，并获取 API Token 和 Chat ID。
+    - 在 GitHub 仓库的 Secrets 页面添加这些值，确保它们安全且不被泄露。
 
 ### 4. 配置 GitHub Actions
 
 #### 4.1 配置自动化工作流
+  - 在你的 fork 仓库中，进入 `Actions` 页面。
+  - 如果 Actions 没有自动启用，点击 `Enable GitHub Actions` 按钮以激活它。
+  - 此脚本依赖于 GitHub Actions 定时执行。您可以在 `.github/workflows/webhostmost-keepalive.yml` 文件中设置定时任务。
+  - 该工作流默认每月 **1号** 执行一次。如果您想更改执行频率，可以修改 `cron` 表达式。例如：
+    
+    ```yaml
+    on:
+      schedule:
+        - cron: '0 0 1 * *'  # 每月 1号 执行一次（UTC时间）
+    ```
+    
+#### 4.2 运行工作流
+  - GitHub Actions 将会根据你设置的定时任务（例如每三天一次）自动运行脚本。
+  - 如果需要手动触发，可以在 Actions 页面手动运行工作流。
 
-此脚本依赖于 GitHub Actions 定时执行。您可以在 `.github/workflows/webhostmost-keepalive.yml` 文件中设置定时任务。
 
-该工作流默认每 **5 天** 执行一次。如果您想更改执行频率，可以修改 `cron` 表达式。例如：
-
-```yaml
-on:
-  schedule:
-    - cron: '0 3 */5 * *'  # 每5天运行一次（UTC时间）
-```
 
 ---
 
@@ -88,12 +104,12 @@ GitHub Actions 将根据预设的时间表定期运行 `keepalive.py` 脚本。�
 示例通知内容：
 
 ```
-📡 WebHostMost 保活报告
+📡 WEBHOST登录状态:
 
 🟢 user1@example.com 登录成功 ✅
-⏳ 剩余时间：
-🗓️ 44 天
-⏰ 23 小时 50 分钟 27 秒
+⏳ 剩余时间：44 天
+🟢 user1@example.com 登录成功 ✅
+⏳ 剩余时间：44 天
 
 🔴 user2@example.com 登录失败 ❌，请检查邮箱或密码
 ```
