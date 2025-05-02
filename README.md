@@ -38,20 +38,7 @@ git clone https://github.com/your-username/webhostmost-keepalive.git
 cd webhostmost-keepalive
 ```
 
-### 2. 安装依赖
-
-该脚本需要 Python 环境，安装必需的依赖：
-
-```bash
-pip install -r requirements.txt
-```
-
-`requirements.txt` 文件包含以下依赖：
-
-* `requests` — 用于 HTTP 请求。
-* `beautifulsoup4` — 用于解析 HTML 页面。
-
-### 3. 配置 GitHub Secrets
+### 2. 配置 GitHub Secrets
 
 请在 GitHub 仓库的 **Settings > Secrets and variables > Actions** 中，添加以下 Secrets：
   - 转到你 fork 的仓库页面。
@@ -65,9 +52,9 @@ pip install -r requirements.txt
     - 在 Telegram 中创建 Bot，并获取 API Token 和 Chat ID。
     - 在 GitHub 仓库的 Secrets 页面添加这些值，确保它们安全且不被泄露。
 
-### 4. 配置 GitHub Actions
+### 3. 配置 GitHub Actions
 
-#### 4.1 配置自动化工作流
+#### 3.1 配置自动化工作流
   - 在你的 fork 仓库中，进入 `Actions` 页面。
   - 如果 Actions 没有自动启用，点击 `Enable GitHub Actions` 按钮以激活它。
   - 此脚本依赖于 GitHub Actions 定时执行。您可以在 `.github/workflows/webhostmost-keepalive.yml` 文件中设置定时任务。
@@ -79,7 +66,7 @@ pip install -r requirements.txt
         - cron: '0 0 1 * *'  # 每月 1号 执行一次（UTC时间）
     ```
     
-#### 4.2 运行工作流
+#### 3.2 运行工作流
   - GitHub Actions 将会根据你设置的定时任务（例如每三天一次）自动运行脚本。
   - 如果需要手动触发，可以在 Actions 页面手动运行工作流。
 
@@ -109,9 +96,9 @@ GitHub Actions 将根据预设的时间表定期运行 `keepalive.py` 脚本。�
 🟢 user1@example.com 登录成功 ✅
 ⏱️ 剩余时间：44 天
 🟢 user1@example.com 登录成功 ✅
-⏳ 剩余时间：44 天
+⏱️ 剩余时间：44 天
 
-🔴 user2@example.com 登录失败 ❌，请检查邮箱或密码
+🔴 user2@example.com 登录失败 ❌: 未能跳转到仪表板页面
 ```
 
 ---
