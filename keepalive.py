@@ -71,7 +71,7 @@ if __name__ == "__main__":
         print(status)
 
     if login_statuses:
-        message = "WEBHOST登录状态:\n\n" + "\n".join(login_statuses)
+        message = "📡 WEBHOST登录状态:\n\n" + "\n".join(login_statuses)
         result = send_telegram_message(message)
         print("消息已发送到Telegram:", result)
     else:
