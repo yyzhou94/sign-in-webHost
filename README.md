@@ -114,6 +114,7 @@ GitHub Actions 将根据预设的时间表定期运行 `keepalive.py` 脚本。�
 
 ## 📬 支持与贡献
 
+[edgeone](https://edgeone.ai/media/34fe3a45-492d-4ea4-ae5d-ea1087ca7b4b.png)
 如果您遇到任何问题，欢迎通过 Issues 提交反馈或改进建议。
 
 如果您希望贡献代码，欢迎提交 Pull Request，我们会尽快审核并合并您的更改。
